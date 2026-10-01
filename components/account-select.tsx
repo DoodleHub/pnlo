@@ -2,15 +2,16 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import type { Account } from "@/lib/pnl";
-import { Check, ChevronDown } from "./icons";
+import { Check, ChevronDown, Plus } from "./icons";
 
 type Props = {
   accounts: Account[];
   value: string;
   onChange: (id: string) => void;
+  onCreate: () => void;
 };
 
-export function AccountSelect({ accounts, value, onChange }: Props) {
+export function AccountSelect({ accounts, value, onChange, onCreate }: Props) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const listId = useId();
@@ -65,6 +66,19 @@ export function AccountSelect({ accounts, value, onChange }: Props) {
               </button>
             </li>
           ))}
+          <li role="presentation" className="mt-1 border-t border-line pt-1">
+            <button
+              type="button"
+              onClick={() => {
+                onCreate();
+                setOpen(false);
+              }}
+              className="flex w-full items-center gap-2 px-4 py-2 text-left text-body text-fg-secondary hover:bg-raised hover:text-fg"
+            >
+              <Plus className="size-4" />
+              New account
+            </button>
+          </li>
         </ul>
       )}
     </div>

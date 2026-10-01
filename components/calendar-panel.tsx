@@ -15,12 +15,25 @@ type Props = {
   onNext: () => void;
   onToday: () => void;
   onUnitChange: (unit: Unit) => void;
+  onSelectDay: (day: CalendarDay) => void;
 };
 
 const btn =
   "inline-flex h-11 items-center justify-center rounded-md border border-line bg-surface text-body text-fg transition-colors hover:bg-raised";
 
-export function CalendarPanel({ year, month, weeks, today, unit, base, onPrev, onNext, onToday, onUnitChange }: Props) {
+export function CalendarPanel({
+  year,
+  month,
+  weeks,
+  today,
+  unit,
+  base,
+  onPrev,
+  onNext,
+  onToday,
+  onUnitChange,
+  onSelectDay,
+}: Props) {
   return (
     <section aria-label="Calendar" className="rounded-lg border border-line-strong bg-surface p-3 sm:p-4">
       <div className="mb-4 flex flex-wrap items-center gap-2 px-1 sm:px-3">
@@ -61,7 +74,14 @@ export function CalendarPanel({ year, month, weeks, today, unit, base, onPrev, o
           {weeks.map((week) => (
             <div role="row" key={week[0].key} className="contents">
               {week.map((day) => (
-                <DayCell key={day.key} day={day} isToday={isSameDay(day.date, today)} unit={unit} base={base} />
+                <DayCell
+                  key={day.key}
+                  day={day}
+                  isToday={isSameDay(day.date, today)}
+                  unit={unit}
+                  base={base}
+                  onSelect={onSelectDay}
+                />
               ))}
               <WeekTotal value={weekTotal(week)} unit={unit} base={base} />
             </div>
@@ -77,16 +97,48 @@ export function CalendarPanel({ year, month, weeks, today, unit, base, onPrev, o
 const cellFill = { profit: "bg-profit-cell", loss: "bg-loss-cell", flat: "bg-cell" };
 const figure = { profit: "text-profit", loss: "text-loss", flat: "text-fg-secondary" };
 
-function DayCell({ day, isToday, unit, base }: { day: CalendarDay; isToday: boolean; unit: Unit; base: number }) {
+const entryLabel = new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric" });
+
+type DayCellProps = {
+  day: CalendarDay;
+  isToday: boolean;
+  unit: Unit;
+  base: number;
+  onSelect: (day: CalendarDay) => void;
+};
+
+function DayCell({ day, isToday, unit, base, onSelect }: DayCellProps) {
   const t = tone(day.pnl);
+  const body =
+    "grid h-full min-h-[72px] w-full grid-rows-[auto_1fr] px-2 pt-2 pb-3 text-left sm:min-h-[84px] sm:px-3";
   return (
     <div
       role="gridcell"
       aria-current={isToday ? "date" : undefined}
-      className={`relative grid min-h-[72px] grid-rows-[auto_1fr] px-2 sm:min-h-[84px] sm:px-3 pt-2 pb-3 ${cellFill[t]} ${
-        isToday ? "z-[1] rounded-sm shadow-[inset_0_0_0_2px_var(--accent)]" : ""
-      }`}
+      className={`relative ${cellFill[t]} ${isToday ? "z-[1] rounded-sm shadow-[inset_0_0_0_2px_var(--accent)]" : ""}`}
     >
+      {day.inMonth ? (
+        <button
+          type="button"
+          onClick={() => onSelect(day)}
+          aria-label={`Edit P&L for ${entryLabel.format(day.date)}`}
+          className={`${body} rounded-sm transition-[box-shadow] hover:shadow-[inset_0_0_0_1px_var(--border-strong)] focus-visible:outline-offset-[-2px]`}
+        >
+          <DayContent day={day} unit={unit} base={base} />
+        </button>
+      ) : (
+        <div className={body}>
+          <DayContent day={day} unit={unit} base={base} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DayContent({ day, unit, base }: { day: CalendarDay; unit: Unit; base: number }) {
+  const t = tone(day.pnl);
+  return (
+    <>
       <span className={`text-label font-medium tabular-nums ${day.inMonth ? "text-fg" : "text-fg-secondary"}`}>
         {day.date.getDate()}
       </span>
@@ -99,7 +151,7 @@ function DayCell({ day, isToday, unit, base }: { day: CalendarDay; isToday: bool
           {formatPnl(day.pnl, unit, base)}
         </span>
       )}
-    </div>
+    </>
   );
 }
 

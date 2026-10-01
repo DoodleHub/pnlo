@@ -21,6 +21,7 @@ export const ChevronLeft = (p: IconProps) => <Stroke {...p} d="m15 18-6-6 6-6" /
 export const ChevronRight = (p: IconProps) => <Stroke {...p} d="m9 18 6-6-6-6" />;
 export const ChevronDown = (p: IconProps) => <Stroke {...p} d="m6 9 6 6 6-6" />;
 export const Check = (p: IconProps) => <Stroke {...p} d="M20 6 9 17l-5-5" />;
+export const Plus = (p: IconProps) => <Stroke {...p} d="M12 5v14M5 12h14" />;
 
 export function LogoMark({ className }: IconProps) {
   return (

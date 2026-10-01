@@ -1,9 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { buildMonth, monthStats, type Account, type Unit } from "@/lib/pnl";
+import { useCallback, useMemo, useState } from "react";
+import { buildMonth, monthStats, type Account, type CalendarDay, type Unit } from "@/lib/pnl";
 import { AppHeader } from "./app-header";
 import { CalendarPanel } from "./calendar-panel";
+import { CreateAccountForm } from "./create-account-form";
+import { DayEditor } from "./day-editor";
+import { Modal } from "./modal";
 import { StatStrip } from "./stat-strip";
 
 type Props = {
@@ -16,10 +19,17 @@ export function PnlDashboard({ accounts, today, userInitial }: Props) {
   const [accountId, setAccountId] = useState(accounts[0].id);
   const [view, setView] = useState({ year: today.getFullYear(), month: today.getMonth() });
   const [unit, setUnit] = useState<Unit>("usd");
+  const [editingDay, setEditingDay] = useState<CalendarDay | null>(null);
+  const [creatingAccount, setCreatingAccount] = useState(false);
 
   const account = accounts.find((a) => a.id === accountId) ?? accounts[0];
   const weeks = useMemo(() => buildMonth(view.year, view.month, account.daily), [view, account]);
   const stats = useMemo(() => monthStats(weeks), [weeks]);
+
+  const onAccountCreated = useCallback((id: string) => {
+    setAccountId(id);
+    setCreatingAccount(false);
+  }, []);
 
   const shift = (delta: number) =>
     setView(({ year, month }) => {
@@ -33,6 +43,7 @@ export function PnlDashboard({ accounts, today, userInitial }: Props) {
         accounts={accounts}
         accountId={account.id}
         onAccountChange={setAccountId}
+        onCreateAccount={() => setCreatingAccount(true)}
         userInitial={userInitial}
       />
 
@@ -56,8 +67,24 @@ export function PnlDashboard({ accounts, today, userInitial }: Props) {
           onNext={() => shift(1)}
           onToday={() => setView({ year: today.getFullYear(), month: today.getMonth() })}
           onUnitChange={setUnit}
+          onSelectDay={setEditingDay}
         />
       </div>
+
+      {editingDay && (
+        <DayEditor
+          key={`${account.id}:${editingDay.key}`}
+          accountId={account.id}
+          accountName={account.name}
+          day={editingDay}
+          onClose={() => setEditingDay(null)}
+        />
+      )}
+      {creatingAccount && (
+        <Modal title="New account" onClose={() => setCreatingAccount(false)}>
+          <CreateAccountForm onCreated={onAccountCreated} onCancel={() => setCreatingAccount(false)} />
+        </Modal>
+      )}
     </div>
   );
 }
