@@ -13,10 +13,11 @@ type Props = {
 export function Modal({ title, description, onClose, children }: Props) {
   const ref = useRef<HTMLDialogElement>(null);
 
+  // No close() on cleanup: it fires a "close" event that calls onClose, which under Strict Mode's
+  // mount → unmount → mount would dismiss the dialog as soon as it opens. Unmounting removes it anyway.
   useEffect(() => {
     const dialog = ref.current;
-    dialog?.showModal();
-    return () => dialog?.close();
+    if (dialog && !dialog.open) dialog.showModal();
   }, []);
 
   return (
