@@ -96,6 +96,18 @@ export function formatPnl(value: number, unit: Unit, base: number): string {
   return unit === "usd" ? `${sign}$${body}` : `${sign}${body}%`;
 }
 
+const compact = new Intl.NumberFormat("en-US", { notation: "compact", maximumSignificantDigits: 2 });
+const pctShort = new Intl.NumberFormat("en-US", { maximumFractionDigits: 1 });
+
+/** Short signed figure for narrow cells: +1.5k, -340, +12k, +1.2M, +1.8%, +12%, 0. */
+export function formatPnlCompact(value: number, unit: Unit, base: number): string {
+  const amount = unit === "usd" ? value : (value / base) * 100;
+  const abs = Math.abs(amount);
+  const sign = amount > 0 ? "+" : amount < 0 ? "-" : "";
+  if (unit === "pct") return `${sign}${abs < 10 ? pctShort.format(abs) : compact.format(abs).replace("K", "k")}%`;
+  return `${sign}${Math.round(abs) < 1000 ? Math.round(abs) : compact.format(abs).replace("K", "k")}`;
+}
+
 export function tone(value: number | null): "profit" | "loss" | "flat" {
   if (value === null || value === 0) return "flat";
   return value > 0 ? "profit" : "loss";
