@@ -10,7 +10,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # pnlo
 
-A daily profit & loss calendar for traders. Users sign in with an email magic link, create trading accounts, and log each day's net P&L (after fees). The dashboard shows one account's month as a calendar with weekly totals and a summary strip, in USD or as a percent of the account's starting balance.
+A daily profit & loss calendar for traders. Users sign in with email and password, create trading accounts, and log each day's net P&L (after fees). The dashboard shows one account's month as a calendar with weekly totals and a summary strip, in USD or as a percent of the account's starting balance.
 
 Stack: Next.js 16 (App Router, Turbopack, `proxy.ts` instead of middleware), React 19, Tailwind CSS v4, Supabase (Postgres + Auth) via `@supabase/ssr`. TypeScript strict. No test suite yet; verify with `npm run build` and `npm run lint`.
 
@@ -23,8 +23,8 @@ app/
   globals.css                Design tokens (see Design system)
   page.tsx                   Dashboard (server): loads claims + accounts, renders PnlDashboard or the first-account form
   actions.ts                 Server actions: createAccount, saveDailyPnl (upsert, or delete when pnl is null)
-  login/                     Magic-link sign-in page, form (client), sendMagicLink action
-  auth/confirm/route.ts      Email link landing: exchanges `code` (PKCE) or verifies `token_hash`, then redirects
+  login/                     Email/password sign-in + sign-up page, form (client), authenticate action
+  auth/confirm/route.ts      Sign-up confirmation email landing: exchanges `code` (PKCE) or verifies `token_hash`, then redirects
   auth/actions.ts            signOut action
 components/
   pnl-dashboard.tsx          Client root of the dashboard: selected account, visible month, unit, open dialogs
@@ -74,7 +74,7 @@ Schema (`public`):
 
 Security model: RLS is on for both tables, with select/insert/update/delete policies `to authenticated`. `accounts` is owned via `user_id = (select auth.uid())`; `daily_pnl` via an `exists` check on the parent account. `anon` has no privileges. Do not insert `user_id` from the client; rely on the column default.
 
-Auth: email magic link (`signInWithOtp`) with `emailRedirectTo = <origin>/auth/confirm`, where origin is `NEXT_PUBLIC_SITE_URL` if set, else the request origin. If the redirect isn't allow-listed, Supabase silently falls back to the dashboard Site URL. Each environment's `/auth/confirm` URL must be in the Supabase dashboard's Auth redirect allow-list. In server code, check identity with `supabase.auth.getClaims()`, not `getSession()`. Keep `getClaims()` immediately after `createServerClient` in `lib/supabase/proxy.ts`.
+Auth: email + password (`signInWithPassword`, `signUp`). Sign-up passes `emailRedirectTo = <origin>/auth/confirm` for the confirmation email, where origin is `NEXT_PUBLIC_SITE_URL` if set, else the request origin. If the redirect isn't allow-listed, Supabase silently falls back to the dashboard Site URL. Each environment's `/auth/confirm` URL must be in the Supabase dashboard's Auth redirect allow-list. In server code, check identity with `supabase.auth.getClaims()`, not `getSession()`. Keep `getClaims()` immediately after `createServerClient` in `lib/supabase/proxy.ts`.
 
 Schema changes:
 1. Apply with the Supabase MCP `apply_migration` tool (there is no local stack or CLI in this repo).

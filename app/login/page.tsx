@@ -20,8 +20,8 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
         pnlo
       </div>
       <h1 className="text-[32px] leading-[38px] font-bold tracking-[-0.02em]">Sign in</h1>
-      <p className="mt-1 mb-6 text-body text-fg-secondary">We&apos;ll email you a link. No password needed.</p>
-      <LoginForm initialError={error ? "That sign-in link is invalid or expired. Request a new one." : undefined} />
+      <p className="mt-1 mb-6 text-body text-fg-secondary">Use your email and password.</p>
+      <LoginForm initialError={error ? "That confirmation link is invalid or expired. Try signing in or create your account again." : undefined} />
     </main>
   );
 }
