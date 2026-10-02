@@ -1,3 +1,5 @@
+import { marketClosure } from "./market";
+
 export type Unit = "usd" | "pct";
 
 export type Account = {
@@ -14,6 +16,8 @@ export type CalendarDay = {
   key: string;
   inMonth: boolean;
   pnl: number | null;
+  /** Why the US market is closed ("Weekend", holiday name), or null on trading days. */
+  closed: string | null;
 };
 
 export type MonthStats = {
@@ -50,7 +54,7 @@ export function buildMonth(year: number, month: number, daily: Record<string, nu
       const date = new Date(start.getFullYear(), start.getMonth(), start.getDate() + w * 7 + d);
       const key = toKey(date);
       const inMonth = date.getMonth() === month;
-      week.push({ date, key, inMonth, pnl: inMonth ? (daily[key] ?? null) : null });
+      week.push({ date, key, inMonth, pnl: inMonth ? (daily[key] ?? null) : null, closed: marketClosure(date) });
     }
     weeks.push(week);
   }
@@ -66,13 +70,13 @@ export function weekTotal(week: CalendarDay[]): number | null {
 export function monthStats(weeks: CalendarDay[][]): MonthStats {
   const days = weeks.flat().filter((d) => d.inMonth);
   const traded = days.filter((d) => d.pnl !== null).map((d) => d.pnl as number);
-  const weekdays = days.filter((d) => d.date.getDay() !== 0 && d.date.getDay() !== 6);
+  const open = days.filter((d) => d.closed === null);
   return {
     total: traded.reduce((a, b) => a + b, 0),
     best: traded.length ? Math.max(...traded) : null,
     worst: traded.length ? Math.min(...traded) : null,
     greenDays: traded.filter((v) => v > 0).length,
-    tradingDays: weekdays.length,
+    tradingDays: open.length,
   };
 }
 

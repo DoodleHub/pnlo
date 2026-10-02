@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { marketClosureForKey } from "@/lib/market";
 import { createClient } from "@/lib/supabase/server";
 
 export type ActionResult = { error?: string; id?: string };
@@ -31,6 +32,7 @@ export async function createAccount(_prev: ActionResult, formData: FormData): Pr
 export async function saveDailyPnl(accountId: string, day: string, pnl: number | null): Promise<ActionResult> {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return { error: "Invalid date." };
   if (pnl !== null && !Number.isFinite(pnl)) return { error: "Enter a number." };
+  if (pnl !== null && marketClosureForKey(day) !== null) return { error: "The US market is closed that day." };
 
   const supabase = await createClient();
   const { error } =

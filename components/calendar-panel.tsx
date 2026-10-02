@@ -1,7 +1,7 @@
 import { formatPnl, isSameDay, tone, weekTotal, type CalendarDay, type Unit } from "@/lib/pnl";
 import { ChevronLeft, ChevronRight } from "./icons";
 
-const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri"];
 const monthLabel = new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric" });
 
 type Props = {
@@ -58,7 +58,7 @@ export function CalendarPanel({
         <div
           role="grid"
           aria-label="Daily profit and loss"
-          className="grid min-w-[640px] grid-cols-[repeat(7,minmax(0,1fr))_minmax(0,1.05fr)] gap-px overflow-hidden rounded-sm border border-line bg-line"
+          className="grid min-w-[640px] grid-cols-[repeat(5,minmax(0,1fr))_minmax(0,1.05fr)] gap-px overflow-hidden rounded-sm border border-line bg-line"
         >
           <div role="row" className="contents">
             {[...WEEKDAYS, "Week total"].map((d) => (
@@ -71,9 +71,10 @@ export function CalendarPanel({
               </div>
             ))}
           </div>
-          {weeks.map((week) => (
+          {/* Weekends are hidden; skip weeks whose weekdays all fall outside the month. */}
+          {weeks.filter((week) => week.slice(0, 5).some((d) => d.inMonth)).map((week) => (
             <div role="row" key={week[0].key} className="contents">
-              {week.map((day) => (
+              {week.slice(0, 5).map((day) => (
                 <DayCell
                   key={day.key}
                   day={day}
@@ -109,15 +110,20 @@ type DayCellProps = {
 
 function DayCell({ day, isToday, unit, base, onSelect }: DayCellProps) {
   const t = tone(day.pnl);
+  // Closed days stay editable only if they already hold an entry, so it can be cleared.
+  const editable = day.inMonth && (day.closed === null || day.pnl !== null);
+  const fill = day.closed !== null && day.pnl === null ? "bg-sunken" : cellFill[t];
   const body =
     "grid h-full min-h-[72px] w-full grid-rows-[auto_1fr] px-2 pt-2 pb-3 text-left sm:min-h-[84px] sm:px-3";
   return (
     <div
       role="gridcell"
       aria-current={isToday ? "date" : undefined}
-      className={`relative ${cellFill[t]} ${isToday ? "z-[1] rounded-sm shadow-[inset_0_0_0_2px_var(--accent)]" : ""}`}
+      aria-disabled={day.inMonth && !editable ? true : undefined}
+      title={day.closed && day.closed !== "Weekend" ? `Market closed: ${day.closed}` : undefined}
+      className={`relative ${fill} ${isToday ? "z-[1] rounded-sm shadow-[inset_0_0_0_2px_var(--accent)]" : ""}`}
     >
-      {day.inMonth ? (
+      {editable ? (
         <button
           type="button"
           onClick={() => onSelect(day)}
@@ -137,12 +143,19 @@ function DayCell({ day, isToday, unit, base, onSelect }: DayCellProps) {
 
 function DayContent({ day, unit, base }: { day: CalendarDay; unit: Unit; base: number }) {
   const t = tone(day.pnl);
+  const dayColor = !day.inMonth ? "text-fg-secondary" : day.closed !== null && day.pnl === null ? "text-fg-muted" : "text-fg";
   return (
     <>
-      <span className={`text-label font-medium tabular-nums ${day.inMonth ? "text-fg" : "text-fg-secondary"}`}>
+      <span className={`text-label font-medium tabular-nums ${dayColor}`}>
         {day.date.getDate()}
       </span>
-      {day.pnl === null ? (
+      {day.pnl === null && day.closed !== null ? (
+        day.inMonth && day.closed !== "Weekend" ? (
+          <span className="place-self-center text-center text-caption text-fg-muted">{day.closed}</span>
+        ) : (
+          <span aria-label="Market closed" />
+        )
+      ) : day.pnl === null ? (
         <span aria-label="No activity" className="place-self-center text-figure-md text-fg-faint">
           —
         </span>
