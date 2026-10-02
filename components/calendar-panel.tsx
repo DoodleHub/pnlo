@@ -1,4 +1,4 @@
-import { formatPnl, formatPnlCompact, isSameDay, tone, weekTotal, type CalendarDay, type Unit } from "@/lib/pnl";
+import { formatPnl, formatPnlCompact, tone, weekTotal, type CalendarDay, type Unit } from "@/lib/pnl";
 import { ChevronLeft, ChevronRight } from "./icons";
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri"];
@@ -8,7 +8,8 @@ type Props = {
   year: number;
   month: number;
   weeks: CalendarDay[][];
-  today: Date;
+  /** Local `YYYY-MM-DD` of today; null until known on the client. */
+  todayKey: string | null;
   unit: Unit;
   base: number;
   onPrev: () => void;
@@ -25,7 +26,7 @@ export function CalendarPanel({
   year,
   month,
   weeks,
-  today,
+  todayKey,
   unit,
   base,
   onPrev,
@@ -82,7 +83,7 @@ export function CalendarPanel({
               <DayCell
                 key={day.key}
                 day={day}
-                isToday={isSameDay(day.date, today)}
+                isToday={day.key === todayKey}
                 unit={unit}
                 base={base}
                 onSelect={onSelectDay}

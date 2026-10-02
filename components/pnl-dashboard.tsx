@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
-import { buildMonth, formatMoney, formatPnl, monthStats, tone, totalPnl, type Account, type CalendarDay, type Unit } from "@/lib/pnl";
+import { useCallback, useMemo, useState, useSyncExternalStore } from "react";
+import { buildMonth, formatMoney, formatPnl, monthStats, toKey, tone, totalPnl, type Account, type CalendarDay, type Unit } from "@/lib/pnl";
 import { AppHeader } from "./app-header";
 import { CalendarPanel } from "./calendar-panel";
 import { CreateAccountForm } from "./create-account-form";
@@ -12,20 +12,56 @@ import { StatStrip } from "./stat-strip";
 
 type Props = {
   accounts: Account[];
-  today: Date;
+  /** Server's clock, only used to pick the month for the server render. */
+  serverNow: Date;
   userEmail: string;
   userInitial: string;
 };
 
 const changeTone = { profit: "text-profit", loss: "text-loss", flat: "text-fg-muted" };
 
-export function PnlDashboard({ accounts, today, userEmail, userInitial }: Props) {
+// Re-read the date when the tab regains focus and at the next local midnight.
+function subscribeToday(onChange: () => void) {
+  let timer: ReturnType<typeof setTimeout>;
+  const schedule = () => {
+    const now = new Date();
+    const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    timer = setTimeout(() => {
+      onChange();
+      schedule();
+    }, midnight.getTime() - now.getTime());
+  };
+  schedule();
+  document.addEventListener("visibilitychange", onChange);
+  return () => {
+    clearTimeout(timer);
+    document.removeEventListener("visibilitychange", onChange);
+  };
+}
+
+/** Today's key in the browser's timezone; null during the server render, whose clock may be on another day. */
+function useTodayKey() {
+  return useSyncExternalStore(subscribeToday, () => toKey(new Date()), () => null);
+}
+
+export function PnlDashboard({ accounts, serverNow, userEmail, userInitial }: Props) {
   const [accountId, setAccountId] = useState(accounts[0].id);
-  const [view, setView] = useState({ year: today.getFullYear(), month: today.getMonth() });
+  const todayKey = useTodayKey();
+  // null follows the current month; set once the user navigates.
+  const [pickedMonth, setPickedMonth] = useState<{ year: number; month: number } | null>(null);
   const [unit, setUnit] = useState<Unit>("usd");
   const [editingDay, setEditingDay] = useState<CalendarDay | null>(null);
   const [creatingAccount, setCreatingAccount] = useState(false);
   const [managingAccounts, setManagingAccounts] = useState(false);
+
+  const view = useMemo(() => {
+    if (pickedMonth) return pickedMonth;
+    if (todayKey) {
+      const [y, m] = todayKey.split("-").map(Number);
+      return { year: y, month: m - 1 };
+    }
+    return { year: serverNow.getFullYear(), month: serverNow.getMonth() };
+  }, [pickedMonth, todayKey, serverNow]);
 
   const account = accounts.find((a) => a.id === accountId) ?? accounts[0];
   const weeks = useMemo(() => buildMonth(view.year, view.month, account.daily), [view, account]);
@@ -37,11 +73,10 @@ export function PnlDashboard({ accounts, today, userEmail, userInitial }: Props)
     setCreatingAccount(false);
   }, []);
 
-  const shift = (delta: number) =>
-    setView(({ year, month }) => {
-      const d = new Date(year, month + delta, 1);
-      return { year: d.getFullYear(), month: d.getMonth() };
-    });
+  const shift = (delta: number) => {
+    const d = new Date(view.year, view.month + delta, 1);
+    setPickedMonth({ year: d.getFullYear(), month: d.getMonth() });
+  };
 
   return (
     <div className="mx-auto flex w-full max-w-[1400px] flex-col px-4 pt-4 pb-10 sm:px-8 sm:pt-[18px]">
@@ -79,12 +114,12 @@ export function PnlDashboard({ accounts, today, userEmail, userInitial }: Props)
           year={view.year}
           month={view.month}
           weeks={weeks}
-          today={today}
+          todayKey={todayKey}
           unit={unit}
           base={account.startingBalance}
           onPrev={() => shift(-1)}
           onNext={() => shift(1)}
-          onToday={() => setView({ year: today.getFullYear(), month: today.getMonth() })}
+          onToday={() => setPickedMonth(null)}
           onUnitChange={setUnit}
           onSelectDay={setEditingDay}
         />

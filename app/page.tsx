@@ -32,5 +32,5 @@ export default async function Home() {
     );
   }
 
-  return <PnlDashboard accounts={accounts} today={new Date()} userEmail={email} userInitial={userInitial} />;
+  return <PnlDashboard accounts={accounts} serverNow={new Date()} userEmail={email} userInitial={userInitial} />;
 }
