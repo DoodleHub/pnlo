@@ -40,3 +40,21 @@ export function LogoMark({ className }: IconProps) {
     </svg>
   );
 }
+
+/** Indeterminate progress indicator; place it next to a text label that says what's happening. */
+export function Spinner({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      aria-hidden="true"
+      className={`motion-safe:animate-spin ${className ?? "size-[18px]"}`}
+    >
+      <circle cx="12" cy="12" r="9" opacity={0.25} />
+      <path d="M21 12a9 9 0 0 0-9-9" />
+    </svg>
+  );
+}

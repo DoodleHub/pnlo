@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { Spinner } from "@/components/icons";
 import { authenticate, type LoginMode, type LoginState } from "./actions";
 
 const inputClass =
@@ -44,8 +45,9 @@ export function LoginForm({ initialError }: { initialError?: string }) {
       <button
         type="submit"
         disabled={pending}
-        className="mt-1 h-11 rounded-md bg-accent text-body font-semibold text-canvas transition-opacity hover:opacity-90 disabled:opacity-60"
+        className="mt-1 inline-flex h-11 items-center justify-center gap-2 rounded-md bg-accent text-body font-semibold text-canvas transition-opacity hover:opacity-90 disabled:opacity-60"
       >
+        {pending && <Spinner className="size-4" />}
         {pending ? (signup ? "Creating account…" : "Signing in…") : signup ? "Create account" : "Sign in"}
       </button>
       {state.message && (

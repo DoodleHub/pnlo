@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { saveDailyPnl } from "@/app/actions";
 import type { CalendarDay } from "@/lib/pnl";
 import { inputClass, primaryButton, secondaryButton } from "./create-account-form";
+import { Spinner } from "./icons";
 import { Modal } from "./modal";
 
 const dayLabel = new Intl.DateTimeFormat("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
@@ -19,9 +20,12 @@ export function DayEditor({ accountId, accountName, day, onClose }: Props) {
   const [value, setValue] = useState(day.pnl === null ? "" : String(day.pnl));
   const [error, setError] = useState<string>();
   const [pending, startTransition] = useTransition();
+  // Which button started the pending save, so only that one shows a spinner.
+  const [clearing, setClearing] = useState(false);
 
-  const save = (pnl: number | null) =>
+  const save = (pnl: number | null, clear = false) =>
     startTransition(async () => {
+      setClearing(clear);
       const result = await saveDailyPnl(accountId, day.key, pnl);
       if (result.error) setError(result.error);
       else onClose();
@@ -57,19 +61,21 @@ export function DayEditor({ accountId, accountName, day, onClose }: Props) {
         )}
         <div className="mt-1 flex flex-wrap gap-3">
           <button type="submit" disabled={pending} className={primaryButton}>
-            {pending ? "Saving…" : "Save"}
+            {pending && !clearing && <Spinner className="size-4" />}
+            {pending && !clearing ? "Saving…" : "Save"}
           </button>
-          <button type="button" onClick={onClose} className={secondaryButton}>
+          <button type="button" onClick={onClose} disabled={pending} className={secondaryButton}>
             Cancel
           </button>
           {day.pnl !== null && (
             <button
               type="button"
               disabled={pending}
-              onClick={() => save(null)}
-              className="ml-auto text-body text-loss hover:underline disabled:opacity-60"
+              onClick={() => save(null, true)}
+              className="ml-auto inline-flex items-center gap-1.5 text-body text-loss hover:underline disabled:opacity-60"
             >
-              Clear day
+              {pending && clearing && <Spinner className="size-4" />}
+              {pending && clearing ? "Clearing…" : "Clear day"}
             </button>
           )}
         </div>

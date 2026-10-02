@@ -1,9 +1,10 @@
 import { redirect } from "next/navigation";
 import { CreateAccountForm } from "@/components/create-account-form";
 import { PnlDashboard } from "@/components/pnl-dashboard";
+import { SubmitButton } from "@/components/submit-button";
 import { getAccounts } from "@/lib/accounts";
 import { createClient } from "@/lib/supabase/server";
-import { signOut } from "./auth/actions";
+import { signOut } from "@/app/auth/actions";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -24,9 +25,13 @@ export default async function Home() {
         <CreateAccountForm />
         <form action={signOut} className="mt-8 text-body text-fg-muted">
           Signed in as {email} ·{" "}
-          <button type="submit" className="underline hover:text-fg">
+          <SubmitButton
+            className="inline-flex items-center gap-1.5 underline hover:text-fg disabled:no-underline"
+            pendingLabel="Signing out…"
+            spinnerClassName="size-3.5"
+          >
             Sign out
-          </button>
+          </SubmitButton>
         </form>
       </main>
     );

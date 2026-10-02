@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { deleteAccount } from "@/app/actions";
 import { formatMoney, type Account } from "@/lib/pnl";
 import { CreateAccountForm, secondaryButton } from "./create-account-form";
-import { Pencil, Trash } from "./icons";
+import { Pencil, Spinner, Trash } from "./icons";
 
 type Props = {
   accounts: Account[];
@@ -65,8 +65,9 @@ export function ManageAccounts({ accounts, onDone }: Props) {
                   type="button"
                   disabled={pending}
                   onClick={() => confirmDelete(a.id)}
-                  className="inline-flex h-9 items-center justify-center rounded-md bg-loss px-4 text-body font-semibold text-canvas transition-opacity hover:opacity-90 disabled:opacity-60"
+                  className="inline-flex h-9 items-center justify-center gap-2 rounded-md bg-loss px-4 text-body font-semibold text-canvas transition-opacity hover:opacity-90 disabled:opacity-60"
                 >
+                  {pending && <Spinner className="size-4" />}
                   {pending ? "Deleting…" : "Delete"}
                 </button>
                 <button

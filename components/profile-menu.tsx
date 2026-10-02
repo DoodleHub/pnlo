@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
 import { signOut } from "@/app/auth/actions";
 import { LogOut, Wallet } from "./icons";
+import { SubmitButton } from "./submit-button";
 
 type Props = {
   userEmail: string;
@@ -86,10 +87,14 @@ export function ProfileMenu({ userEmail, userInitial, onManageAccounts }: Props)
             Manage accounts
           </button>
           <form action={signOut}>
-            <button type="submit" role="menuitem" className={itemClass}>
-              <LogOut className="size-4" />
+            <SubmitButton
+              role="menuitem"
+              className={`${itemClass} disabled:opacity-60`}
+              icon={<LogOut className="size-4" />}
+              pendingLabel="Signing out…"
+            >
               Sign out
-            </button>
+            </SubmitButton>
           </form>
         </div>
       )}

@@ -21,7 +21,8 @@ proxy.ts                     Session refresh + redirect signed-out users to /log
 app/
   layout.tsx                 Root layout, Figtree font, dark theme
   globals.css                Design tokens (see Design system)
-  page.tsx                   Dashboard (server): loads claims + accounts, renders PnlDashboard or the first-account form
+  (dashboard)/page.tsx       Dashboard (server): loads claims + accounts, renders PnlDashboard or the first-account form
+  (dashboard)/loading.tsx    Dashboard skeleton while the page loads (route group keeps it off /login)
   actions.ts                 Server actions: createAccount, updateAccount, deleteAccount, saveDailyPnl (upsert, or delete when pnl is null)
   login/                     Email/password sign-in + sign-up page, form (client), authenticate action
   auth/confirm/route.ts      Sign-up confirmation email landing: exchanges `code` (PKCE) or verifies `token_hash`, then redirects
@@ -37,7 +38,8 @@ components/
   day-editor.tsx             Dialog to set/clear one day's P&L (calls saveDailyPnl)
   create-account-form.tsx    Account form (useActionState → createAccount, or updateAccount when `account` is passed); also exports shared input/button class strings
   modal.tsx                  Native <dialog> wrapper (showModal, Escape, backdrop click)
-  icons.tsx                  Inline SVG icons (24px stroke set) and LogoMark
+  icons.tsx                  Inline SVG icons (24px stroke set), Spinner and LogoMark
+  submit-button.tsx          Form submit button with a spinner while pending (useFormStatus)
 lib/
   pnl.ts                     Pure domain logic: types, buildMonth, weekTotal, monthStats, formatPnl, tone
   market.ts                  US market calendar: marketClosure(date) → "Weekend" | holiday name | null
@@ -108,6 +110,7 @@ Component conventions:
 - Dialogs use `components/modal.tsx` (native `<dialog>`); don't add a modal library.
 - Icons are inline SVG in `components/icons.tsx` (24×24 viewBox, stroke 2, `currentColor`); add new ones there.
 - Focus: global `:focus-visible` accent outline; don't remove outlines.
+- Loading: pending buttons show `Spinner` (size-4) beside a "…ing" label and are disabled; skeleton bones use `bg-raised` with `motion-safe:animate-pulse`.
 - Layout is responsive from ~360px up: `sm:` widens type and padding, and the calendar scrolls horizontally below 640px.
 - Keep ARIA patterns intact: calendar is `role="grid"`, account picker is a listbox, unit toggle uses `aria-pressed`.
 

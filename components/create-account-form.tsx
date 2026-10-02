@@ -3,11 +3,12 @@
 import { useActionState, useEffect } from "react";
 import { createAccount, updateAccount, type ActionResult } from "@/app/actions";
 import type { Account } from "@/lib/pnl";
+import { Spinner } from "./icons";
 
 export const inputClass =
   "h-11 w-full rounded-md border border-line bg-sunken px-4 text-body text-fg tabular-nums placeholder:text-fg-faint focus:border-accent focus:outline-none";
 export const primaryButton =
-  "inline-flex h-11 items-center justify-center rounded-md bg-accent px-5 text-body font-semibold text-canvas transition-opacity hover:opacity-90 disabled:opacity-60";
+  "inline-flex h-11 items-center justify-center gap-2 rounded-md bg-accent px-5 text-body font-semibold text-canvas transition-opacity hover:opacity-90 disabled:opacity-60";
 export const secondaryButton =
   "inline-flex h-11 items-center justify-center rounded-md border border-line bg-surface px-5 text-body text-fg transition-colors hover:bg-raised";
 
@@ -61,6 +62,7 @@ export function CreateAccountForm({ account, onSaved, onCancel }: Props) {
       )}
       <div className="mt-1 flex gap-3">
         <button type="submit" disabled={pending} className={primaryButton}>
+          {pending && <Spinner className="size-4" />}
           {account ? (pending ? "Saving…" : "Save changes") : pending ? "Creating…" : "Create account"}
         </button>
         {onCancel && (
