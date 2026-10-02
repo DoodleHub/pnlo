@@ -8,7 +8,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 <!-- END:nextjs-agent-rules -->
 
-# pnlo
+# Pnlok
 
 A daily profit & loss calendar for traders. Users sign in with email and password, create trading accounts, and log each day's net P&L (after fees). The dashboard shows one account's month as a calendar with weekly totals and a summary strip, in USD or as a percent of the account's starting balance.
 
@@ -89,7 +89,7 @@ Read `.agents/skills/supabase/SKILL.md` before Supabase work.
 
 ## Design system
 
-Single dark theme. All colors, radii and type sizes are tokens in `app/globals.css` (`:root` CSS variables mapped into Tailwind via `@theme inline`), mirroring the pnlo design system's tokens.json. Use the token utilities, never raw hex values or Tailwind's default palette.
+Single dark theme. All colors, radii and type sizes are tokens in `app/globals.css` (`:root` CSS variables mapped into Tailwind via `@theme inline`), mirroring the Pnlok design system's tokens.json. Use the token utilities, never raw hex values or Tailwind's default palette.
 
 Colors (utility → role):
 - Surfaces: `bg-canvas` (page), `bg-surface` (panels, inputs on panels), `bg-sunken` (week-total column, toggle track, inputs in dialogs), `bg-cell` (empty day), `bg-raised` (hover, selected toggle).

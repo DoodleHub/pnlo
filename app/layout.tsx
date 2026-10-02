@@ -9,7 +9,7 @@ const figtree = Figtree({
 });
 
 export const metadata: Metadata = {
-  title: "pnlo · Profit & loss",
+  title: "Pnlok · Profit & loss",
   description: "Your performance, one day at a time.",
 };
 

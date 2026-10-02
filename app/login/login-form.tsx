@@ -54,7 +54,7 @@ export function LoginForm({ initialError }: { initialError?: string }) {
         </p>
       )}
       <p className="mt-2 text-body text-fg-secondary">
-        {signup ? "Already have an account?" : "New to pnlo?"}{" "}
+        {signup ? "Already have an account?" : "New to Pnlok?"}{" "}
         <button
           type="button"
           onClick={() => setMode(signup ? "signin" : "signup")}

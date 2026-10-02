@@ -27,7 +27,7 @@ export function AppHeader({
     <header className="flex items-center justify-between gap-4">
       <Link href="/" className="flex items-center gap-2 text-[26px] font-semibold tracking-[-0.01em] text-fg">
         <LogoMark className="size-7" />
-        pnlo
+        Pnlok
       </Link>
       <div className="flex items-center gap-4">
         <AccountSelect accounts={accounts} value={accountId} onChange={onAccountChange} onCreate={onCreateAccount} />
