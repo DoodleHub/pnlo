@@ -5,7 +5,7 @@ export type Unit = "usd" | "pct";
 export type Account = {
   id: string;
   name: string;
-  /** Balance used as the base for percent mode. */
+  /** Balance before the first logged day. */
   startingBalance: number;
   /** Net P&L after fees, keyed by ISO date (YYYY-MM-DD). */
   daily: Record<string, number>;
@@ -16,14 +16,20 @@ export type CalendarDay = {
   key: string;
   inMonth: boolean;
   pnl: number | null;
+  /** Account balance at the start of this day: starting balance plus all earlier P&L. Percent mode divides by it. */
+  base: number;
   /** Why the US market is closed ("Weekend", holiday name), or null on trading days. */
   closed: string | null;
 };
 
+/** A P&L amount with the balance it is measured against in percent mode. */
+export type Figure = { pnl: number; base: number };
+
 export type MonthStats = {
-  total: number;
-  best: number | null;
-  worst: number | null;
+  /** Month P&L against the balance at the start of the month. */
+  total: Figure;
+  best: Figure | null;
+  worst: Figure | null;
   greenDays: number;
   tradingDays: number;
 };
@@ -40,12 +46,18 @@ export function isSameDay(a: Date, b: Date): boolean {
 }
 
 /** Weeks (Monday first) covering the month, each with seven days. */
-export function buildMonth(year: number, month: number, daily: Record<string, number>): CalendarDay[][] {
+export function buildMonth(year: number, month: number, account: Pick<Account, "daily" | "startingBalance">): CalendarDay[][] {
+  const { daily } = account;
   const first = new Date(year, month, 1);
   const offset = (first.getDay() + 6) % 7; // Monday = 0
   const start = new Date(year, month, 1 - offset);
   const last = new Date(year, month + 1, 0);
   const weekCount = Math.ceil((offset + last.getDate()) / 7);
+
+  // Running balance: everything logged before the first visible day, then each day in order.
+  const startKey = toKey(start);
+  let balance = account.startingBalance;
+  for (const [key, pnl] of Object.entries(daily)) if (key < startKey) balance += pnl;
 
   const weeks: CalendarDay[][] = [];
   for (let w = 0; w < weekCount; w++) {
@@ -54,28 +66,39 @@ export function buildMonth(year: number, month: number, daily: Record<string, nu
       const date = new Date(start.getFullYear(), start.getMonth(), start.getDate() + w * 7 + d);
       const key = toKey(date);
       const inMonth = date.getMonth() === month;
-      week.push({ date, key, inMonth, pnl: inMonth ? (daily[key] ?? null) : null, closed: marketClosure(date) });
+      week.push({ date, key, inMonth, pnl: inMonth ? (daily[key] ?? null) : null, base: balance, closed: marketClosure(date) });
+      balance += daily[key] ?? 0;
     }
     weeks.push(week);
   }
   return weeks;
 }
 
-/** Sum of the week's in-month days, or null when nothing traded. */
-export function weekTotal(week: CalendarDay[]): number | null {
-  const traded = week.filter((d) => d.pnl !== null);
-  return traded.length ? traded.reduce((sum, d) => sum + (d.pnl ?? 0), 0) : null;
+/** Sum of the week's in-month days against the balance at the week's first in-month day, or null when nothing traded. */
+export function weekTotal(week: CalendarDay[]): Figure | null {
+  const days = week.filter((d) => d.inMonth);
+  const traded = days.filter((d) => d.pnl !== null);
+  if (!traded.length) return null;
+  return { pnl: traded.reduce((sum, d) => sum + (d.pnl ?? 0), 0), base: days[0].base };
 }
 
-export function monthStats(weeks: CalendarDay[][]): MonthStats {
+/** Value shown for a figure in the given unit, used to rank days. */
+function measure(f: Figure, unit: Unit): number {
+  return unit === "usd" ? f.pnl : f.pnl / f.base;
+}
+
+/** Best and worst days are ranked in the displayed unit, so they match the calendar cells. */
+export function monthStats(weeks: CalendarDay[][], unit: Unit): MonthStats {
   const days = weeks.flat().filter((d) => d.inMonth);
-  const traded = days.filter((d) => d.pnl !== null).map((d) => d.pnl as number);
+  const traded: Figure[] = days.filter((d) => d.pnl !== null).map((d) => ({ pnl: d.pnl as number, base: d.base }));
   const open = days.filter((d) => d.closed === null);
+  const pick = (better: (a: number, b: number) => boolean) =>
+    traded.reduce<Figure | null>((acc, f) => (acc === null || better(measure(f, unit), measure(acc, unit)) ? f : acc), null);
   return {
-    total: traded.reduce((a, b) => a + b, 0),
-    best: traded.length ? Math.max(...traded) : null,
-    worst: traded.length ? Math.min(...traded) : null,
-    greenDays: traded.filter((v) => v > 0).length,
+    total: { pnl: traded.reduce((a, f) => a + f.pnl, 0), base: days[0].base },
+    best: pick((a, b) => a > b),
+    worst: pick((a, b) => a < b),
+    greenDays: traded.filter((f) => f.pnl > 0).length,
     tradingDays: open.length,
   };
 }
@@ -93,8 +116,9 @@ export function formatMoney(value: number): string {
   return `$${usd.format(value)}`;
 }
 
-/** Signed money or percent: +$4,373.00, -$340.00, +1.84%, $0.00. */
+/** Signed money or percent of `base`: +$4,373.00, -$340.00, +1.84%, $0.00. Percent of a non-positive balance is "—". */
 export function formatPnl(value: number, unit: Unit, base: number): string {
+  if (unit === "pct" && base <= 0) return "—";
   const amount = unit === "usd" ? value : (value / base) * 100;
   const rounded = Math.round(amount * 100) / 100;
   const sign = rounded > 0 ? "+" : rounded < 0 ? "-" : "";
@@ -107,6 +131,7 @@ const pctShort = new Intl.NumberFormat("en-US", { maximumFractionDigits: 1 });
 
 /** Short signed figure for narrow cells: +1.5k, -340, +12k, +1.2M, +1.8%, +12%, 0. */
 export function formatPnlCompact(value: number, unit: Unit, base: number): string {
+  if (unit === "pct" && base <= 0) return "—";
   const amount = unit === "usd" ? value : (value / base) * 100;
   const abs = Math.abs(amount);
   const sign = amount > 0 ? "+" : amount < 0 ? "-" : "";

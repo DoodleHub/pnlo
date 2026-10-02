@@ -64,8 +64,8 @@ export function PnlDashboard({ accounts, serverNow, userEmail, userInitial }: Pr
   }, [pickedMonth, todayKey, serverNow]);
 
   const account = accounts.find((a) => a.id === accountId) ?? accounts[0];
-  const weeks = useMemo(() => buildMonth(view.year, view.month, account.daily), [view, account]);
-  const stats = useMemo(() => monthStats(weeks), [weeks]);
+  const weeks = useMemo(() => buildMonth(view.year, view.month, account), [view, account]);
+  const stats = useMemo(() => monthStats(weeks, unit), [weeks, unit]);
   const allTime = useMemo(() => totalPnl(account), [account]);
 
   const onAccountCreated = useCallback((id: string) => {
@@ -109,14 +109,13 @@ export function PnlDashboard({ accounts, serverNow, userEmail, userInitial }: Pr
       </div>
 
       <div className="flex flex-col gap-4">
-        <StatStrip stats={stats} unit={unit} base={account.startingBalance} />
+        <StatStrip stats={stats} unit={unit} />
         <CalendarPanel
           year={view.year}
           month={view.month}
           weeks={weeks}
           todayKey={todayKey}
           unit={unit}
-          base={account.startingBalance}
           onPrev={() => shift(-1)}
           onNext={() => shift(1)}
           onToday={() => setPickedMonth(null)}

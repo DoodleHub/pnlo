@@ -1,4 +1,4 @@
-import { formatPnl, formatPnlCompact, tone, weekTotal, type CalendarDay, type Unit } from "@/lib/pnl";
+import { formatPnl, formatPnlCompact, tone, weekTotal, type CalendarDay, type Figure, type Unit } from "@/lib/pnl";
 import { ChevronLeft, ChevronRight } from "./icons";
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri"];
@@ -11,7 +11,6 @@ type Props = {
   /** Local `YYYY-MM-DD` of today; null until known on the client. */
   todayKey: string | null;
   unit: Unit;
-  base: number;
   onPrev: () => void;
   onNext: () => void;
   onToday: () => void;
@@ -28,7 +27,6 @@ export function CalendarPanel({
   weeks,
   todayKey,
   unit,
-  base,
   onPrev,
   onNext,
   onToday,
@@ -85,11 +83,10 @@ export function CalendarPanel({
                 day={day}
                 isToday={day.key === todayKey}
                 unit={unit}
-                base={base}
                 onSelect={onSelectDay}
               />
             ))}
-            <WeekTotal value={weekTotal(week)} unit={unit} base={base} />
+            <WeekTotal total={weekTotal(week)} unit={unit} />
           </div>
         ))}
       </div>
@@ -108,11 +105,10 @@ type DayCellProps = {
   day: CalendarDay;
   isToday: boolean;
   unit: Unit;
-  base: number;
   onSelect: (day: CalendarDay) => void;
 };
 
-function DayCell({ day, isToday, unit, base, onSelect }: DayCellProps) {
+function DayCell({ day, isToday, unit, onSelect }: DayCellProps) {
   const t = tone(day.pnl);
   // Closed days stay editable only if they already hold an entry, so it can be cleared.
   const editable = day.inMonth && (day.closed === null || day.pnl !== null);
@@ -134,18 +130,18 @@ function DayCell({ day, isToday, unit, base, onSelect }: DayCellProps) {
           aria-label={`Edit P&L for ${entryLabel.format(day.date)}`}
           className={`${body} rounded-sm transition-[box-shadow] hover:shadow-[inset_0_0_0_1px_var(--border-strong)] focus-visible:outline-offset-[-2px]`}
         >
-          <DayContent day={day} unit={unit} base={base} />
+          <DayContent day={day} unit={unit} />
         </button>
       ) : (
         <div className={body}>
-          <DayContent day={day} unit={unit} base={base} />
+          <DayContent day={day} unit={unit} />
         </div>
       )}
     </div>
   );
 }
 
-function DayContent({ day, unit, base }: { day: CalendarDay; unit: Unit; base: number }) {
+function DayContent({ day, unit }: { day: CalendarDay; unit: Unit }) {
   const t = tone(day.pnl);
   const dayColor = !day.inMonth ? "text-fg-secondary" : day.closed !== null && day.pnl === null ? "text-fg-muted" : "text-fg";
   return (
@@ -167,22 +163,22 @@ function DayContent({ day, unit, base }: { day: CalendarDay; unit: Unit; base: n
           —
         </span>
       ) : (
-        <PnlFigure value={day.pnl} unit={unit} base={base} className={`place-self-center ${figure[t]}`} />
+        <PnlFigure value={day.pnl} unit={unit} base={day.base} className={`place-self-center ${figure[t]}`} />
       )}
     </>
   );
 }
 
-function WeekTotal({ value, unit, base }: { value: number | null; unit: Unit; base: number }) {
-  const t = tone(value);
+function WeekTotal({ total, unit }: { total: Figure | null; unit: Unit }) {
+  const t = tone(total?.pnl ?? null);
   return (
     <div role="gridcell" className="grid place-items-center bg-sunken">
-      {value === null ? (
+      {total === null ? (
         <span aria-label="No activity" className="text-figure-md text-fg-faint">
           —
         </span>
       ) : (
-        <PnlFigure value={value} unit={unit} base={base} className={figure[t]} />
+        <PnlFigure value={total.pnl} unit={unit} base={total.base} className={figure[t]} />
       )}
     </div>
   );

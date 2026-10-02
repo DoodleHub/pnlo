@@ -1,15 +1,15 @@
-import { formatPnl, tone, type MonthStats, type Unit } from "@/lib/pnl";
+import { formatPnl, tone, type Figure, type MonthStats, type Unit } from "@/lib/pnl";
 
-type Props = { stats: MonthStats; unit: Unit; base: number };
+type Props = { stats: MonthStats; unit: Unit };
 
 const toneClass = { profit: "text-profit", loss: "text-loss", flat: "text-accent-soft" };
 
-export function StatStrip({ stats, unit, base }: Props) {
-  const money = (v: number | null) => (v === null ? "—" : formatPnl(v, unit, base));
+export function StatStrip({ stats, unit }: Props) {
+  const money = (f: Figure | null) => (f === null ? "—" : formatPnl(f.pnl, unit, f.base));
   const items = [
-    { label: "Monthly P&L", value: money(stats.total), tone: tone(stats.total) },
-    { label: "Best day", value: money(stats.best), tone: tone(stats.best) },
-    { label: "Worst day", value: money(stats.worst), tone: tone(stats.worst) },
+    { label: "Monthly P&L", value: money(stats.total), tone: tone(stats.total.pnl) },
+    { label: "Best day", value: money(stats.best), tone: tone(stats.best?.pnl ?? null) },
+    { label: "Worst day", value: money(stats.worst), tone: tone(stats.worst?.pnl ?? null) },
     { label: "Green days", value: `${stats.greenDays} / ${stats.tradingDays}`, tone: "flat" as const },
   ];
 
