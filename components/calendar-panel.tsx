@@ -172,13 +172,15 @@ function DayContent({ day, unit }: { day: CalendarDay; unit: Unit }) {
 function WeekTotal({ total, unit }: { total: Figure | null; unit: Unit }) {
   const t = tone(total?.pnl ?? null);
   return (
-    <div role="gridcell" className="grid place-items-center bg-sunken">
+    // Mirrors the day cell's rows so the figure lines up with the daily figures.
+    <div role="gridcell" className="grid grid-rows-[auto_1fr] bg-sunken px-1.5 pt-1.5 pb-2.5 sm:px-3">
+      <span aria-hidden className="invisible text-label">0</span>
       {total === null ? (
-        <span aria-label="No activity" className="text-figure-md text-fg-faint">
+        <span aria-label="No activity" className="place-self-center text-figure-md text-fg-faint">
           —
         </span>
       ) : (
-        <PnlFigure value={total.pnl} unit={unit} base={total.base} className={figure[t]} />
+        <PnlFigure value={total.pnl} unit={unit} base={total.base} className={`place-self-center ${figure[t]}`} />
       )}
     </div>
   );
