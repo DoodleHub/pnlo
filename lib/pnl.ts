@@ -80,6 +80,12 @@ export function monthStats(weeks: CalendarDay[][]): MonthStats {
   };
 }
 
+/** All-time net P&L across every logged day, rounded to cents. */
+export function totalPnl(account: Account): number {
+  const sum = Object.values(account.daily).reduce((a, b) => a + b, 0);
+  return Math.round(sum * 100) / 100;
+}
+
 const usd = new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 /** Unsigned money: $25,000.00. */

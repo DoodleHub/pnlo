@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import { buildMonth, monthStats, type Account, type CalendarDay, type Unit } from "@/lib/pnl";
+import { buildMonth, formatMoney, formatPnl, monthStats, tone, totalPnl, type Account, type CalendarDay, type Unit } from "@/lib/pnl";
 import { AppHeader } from "./app-header";
 import { CalendarPanel } from "./calendar-panel";
 import { CreateAccountForm } from "./create-account-form";
@@ -17,6 +17,8 @@ type Props = {
   userInitial: string;
 };
 
+const changeTone = { profit: "text-profit", loss: "text-loss", flat: "text-fg-muted" };
+
 export function PnlDashboard({ accounts, today, userEmail, userInitial }: Props) {
   const [accountId, setAccountId] = useState(accounts[0].id);
   const [view, setView] = useState({ year: today.getFullYear(), month: today.getMonth() });
@@ -28,6 +30,7 @@ export function PnlDashboard({ accounts, today, userEmail, userInitial }: Props)
   const account = accounts.find((a) => a.id === accountId) ?? accounts[0];
   const weeks = useMemo(() => buildMonth(view.year, view.month, account.daily), [view, account]);
   const stats = useMemo(() => monthStats(weeks), [weeks]);
+  const allTime = useMemo(() => totalPnl(account), [account]);
 
   const onAccountCreated = useCallback((id: string) => {
     setAccountId(id);
@@ -52,11 +55,22 @@ export function PnlDashboard({ accounts, today, userEmail, userInitial }: Props)
         userInitial={userInitial}
       />
 
-      <div className="mt-7 mb-3.5 sm:mt-8">
-        <h1 className="text-[40px] leading-[44px] font-bold tracking-[-0.02em] text-balance sm:text-display-page">
-          Profit &amp; loss
-        </h1>
-        <p className="mt-1 text-body text-fg-secondary sm:text-body-lg">Your performance, one day at a time.</p>
+      <div className="mt-7 mb-3.5 flex flex-wrap items-end justify-between gap-x-6 gap-y-3 sm:mt-8">
+        <div>
+          <h1 className="text-[40px] leading-[44px] font-bold tracking-[-0.02em] text-balance sm:text-display-page">
+            Profit &amp; loss
+          </h1>
+          <p className="mt-1 text-body text-fg-secondary sm:text-body-lg">Your performance, one day at a time.</p>
+        </div>
+        <dl className="grid sm:text-right">
+          <dt className="text-caption text-fg-muted">Current balance</dt>
+          <dd className="text-figure-md font-bold tabular-nums">
+            {formatMoney(account.startingBalance + allTime)}
+            <span className={`ml-2 text-body font-semibold ${changeTone[tone(allTime)]}`}>
+              {formatPnl(allTime, unit, account.startingBalance)}
+            </span>
+          </dd>
+        </dl>
       </div>
 
       <div className="flex flex-col gap-4">
