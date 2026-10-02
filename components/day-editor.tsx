@@ -28,7 +28,7 @@ export function DayEditor({ accountId, accountName, day, onClose }: Props) {
     });
 
   return (
-    <Modal title={dayLabel.format(day.date)} description={`Net P&L after fees · ${accountName}`} onClose={onClose}>
+    <Modal title={dayLabel.format(day.date)} description={accountName} onClose={onClose}>
       <form
         onSubmit={(e) => {
           e.preventDefault();

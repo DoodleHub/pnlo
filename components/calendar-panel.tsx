@@ -218,16 +218,13 @@ function Legend() {
     { label: "No activity", dot: "bg-neutral-dot" },
   ];
   return (
-    <div className="mt-3 flex flex-wrap items-center justify-between gap-x-6 gap-y-2 px-1 text-caption text-fg-muted">
-      <ul className="flex flex-wrap gap-x-6 gap-y-2">
-        {items.map((i) => (
-          <li key={i.label} className="flex items-center gap-2">
-            <span className={`size-2.5 rounded-full ${i.dot}`} />
-            {i.label}
-          </li>
-        ))}
-      </ul>
-      <span>Net P&amp;L · After fees</span>
-    </div>
+    <ul className="mt-3 flex flex-wrap gap-x-6 gap-y-2 px-1 text-caption text-fg-muted">
+      {items.map((i) => (
+        <li key={i.label} className="flex items-center gap-2">
+          <span className={`size-2.5 rounded-full ${i.dot}`} />
+          {i.label}
+        </li>
+      ))}
+    </ul>
   );
 }
