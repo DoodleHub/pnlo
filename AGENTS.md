@@ -74,7 +74,7 @@ Schema (`public`):
 
 Security model: RLS is on for both tables, with select/insert/update/delete policies `to authenticated`. `accounts` is owned via `user_id = (select auth.uid())`; `daily_pnl` via an `exists` check on the parent account. `anon` has no privileges. Do not insert `user_id` from the client; rely on the column default.
 
-Auth: email magic link (`signInWithOtp`) with `emailRedirectTo = <origin>/auth/confirm`. Each environment's `/auth/confirm` URL must be in the Supabase dashboard's Auth redirect allow-list. In server code, check identity with `supabase.auth.getClaims()`, not `getSession()`. Keep `getClaims()` immediately after `createServerClient` in `lib/supabase/proxy.ts`.
+Auth: email magic link (`signInWithOtp`) with `emailRedirectTo = <origin>/auth/confirm`, where origin is `NEXT_PUBLIC_SITE_URL` if set, else the request origin. If the redirect isn't allow-listed, Supabase silently falls back to the dashboard Site URL. Each environment's `/auth/confirm` URL must be in the Supabase dashboard's Auth redirect allow-list. In server code, check identity with `supabase.auth.getClaims()`, not `getSession()`. Keep `getClaims()` immediately after `createServerClient` in `lib/supabase/proxy.ts`.
 
 Schema changes:
 1. Apply with the Supabase MCP `apply_migration` tool (there is no local stack or CLI in this repo).
