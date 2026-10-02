@@ -90,8 +90,8 @@ export function PnlDashboard({ accounts, serverNow, userEmail, userInitial }: Pr
         userInitial={userInitial}
       />
 
-      <div className="mt-7 mb-3.5 flex flex-wrap items-end justify-between gap-x-6 gap-y-3 sm:mt-8">
-        <div>
+      <div className="mt-5 mb-3.5 flex flex-wrap items-end justify-between gap-x-6 gap-y-3 sm:mt-8">
+        <div className="sr-only sm:not-sr-only">
           <h1 className="text-[40px] leading-[44px] font-bold tracking-[-0.02em] text-balance sm:text-display-page">
             Profit &amp; loss
           </h1>

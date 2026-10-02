@@ -16,17 +16,17 @@ export function StatStrip({ stats, unit, base }: Props) {
   return (
     <section
       aria-label="Month summary"
-      className="grid grid-cols-2 gap-y-6 rounded-lg border border-line-strong bg-surface py-6 min-[900px]:grid-cols-4"
+      className="grid grid-cols-2 gap-y-3 rounded-lg border border-line-strong bg-surface py-3 sm:gap-y-6 sm:py-6 min-[900px]:grid-cols-4"
     >
       {items.map((item, i) => (
         <div
           key={item.label}
-          className={`grid gap-1 px-5 sm:px-8 ${i % 2 === 1 ? "border-l border-line" : ""} ${
+          className={`grid gap-0.5 px-4 sm:gap-1 sm:px-8 ${i % 2 === 1 ? "border-l border-line" : ""} ${
             i === 2 ? "min-[900px]:border-l min-[900px]:border-line" : ""
           }`}
         >
-          <span className="text-body text-fg-secondary">{item.label}</span>
-          <span className={`text-[22px] leading-7 font-bold tabular-nums sm:text-figure-lg ${toneClass[item.tone]}`}>
+          <span className="text-caption text-fg-secondary sm:text-body">{item.label}</span>
+          <span className={`text-figure-md font-bold tabular-nums sm:text-figure-lg ${toneClass[item.tone]}`}>
             {item.value}
           </span>
         </div>
