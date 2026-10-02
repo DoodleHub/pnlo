@@ -1,18 +1,28 @@
 import Link from "next/link";
-import { signOut } from "@/app/auth/actions";
 import type { Account } from "@/lib/pnl";
 import { AccountSelect } from "./account-select";
 import { LogoMark } from "./icons";
+import { ProfileMenu } from "./profile-menu";
 
 type Props = {
   accounts: Account[];
   accountId: string;
   onAccountChange: (id: string) => void;
   onCreateAccount: () => void;
+  onManageAccounts: () => void;
+  userEmail: string;
   userInitial: string;
 };
 
-export function AppHeader({ accounts, accountId, onAccountChange, onCreateAccount, userInitial }: Props) {
+export function AppHeader({
+  accounts,
+  accountId,
+  onAccountChange,
+  onCreateAccount,
+  onManageAccounts,
+  userEmail,
+  userInitial,
+}: Props) {
   return (
     <header className="flex items-center justify-between gap-4">
       <Link href="/" className="flex items-center gap-2 text-[26px] font-semibold tracking-[-0.01em] text-fg">
@@ -21,16 +31,7 @@ export function AppHeader({ accounts, accountId, onAccountChange, onCreateAccoun
       </Link>
       <div className="flex items-center gap-4">
         <AccountSelect accounts={accounts} value={accountId} onChange={onAccountChange} onCreate={onCreateAccount} />
-        <form action={signOut}>
-          <button
-            type="submit"
-            title="Sign out"
-            aria-label="Sign out"
-            className="grid size-11 shrink-0 place-items-center rounded-full bg-accent-surface text-base font-semibold text-fg transition-opacity hover:opacity-80"
-          >
-            {userInitial}
-          </button>
-        </form>
+        <ProfileMenu userEmail={userEmail} userInitial={userInitial} onManageAccounts={onManageAccounts} />
       </div>
     </header>
   );

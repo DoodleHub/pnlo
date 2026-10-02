@@ -82,6 +82,11 @@ export function monthStats(weeks: CalendarDay[][]): MonthStats {
 
 const usd = new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+/** Unsigned money: $25,000.00. */
+export function formatMoney(value: number): string {
+  return `$${usd.format(value)}`;
+}
+
 /** Signed money or percent: +$4,373.00, -$340.00, +1.84%, $0.00. */
 export function formatPnl(value: number, unit: Unit, base: number): string {
   const amount = unit === "usd" ? value : (value / base) * 100;

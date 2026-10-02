@@ -6,21 +6,24 @@ import { AppHeader } from "./app-header";
 import { CalendarPanel } from "./calendar-panel";
 import { CreateAccountForm } from "./create-account-form";
 import { DayEditor } from "./day-editor";
+import { ManageAccounts } from "./manage-accounts";
 import { Modal } from "./modal";
 import { StatStrip } from "./stat-strip";
 
 type Props = {
   accounts: Account[];
   today: Date;
+  userEmail: string;
   userInitial: string;
 };
 
-export function PnlDashboard({ accounts, today, userInitial }: Props) {
+export function PnlDashboard({ accounts, today, userEmail, userInitial }: Props) {
   const [accountId, setAccountId] = useState(accounts[0].id);
   const [view, setView] = useState({ year: today.getFullYear(), month: today.getMonth() });
   const [unit, setUnit] = useState<Unit>("usd");
   const [editingDay, setEditingDay] = useState<CalendarDay | null>(null);
   const [creatingAccount, setCreatingAccount] = useState(false);
+  const [managingAccounts, setManagingAccounts] = useState(false);
 
   const account = accounts.find((a) => a.id === accountId) ?? accounts[0];
   const weeks = useMemo(() => buildMonth(view.year, view.month, account.daily), [view, account]);
@@ -44,6 +47,8 @@ export function PnlDashboard({ accounts, today, userInitial }: Props) {
         accountId={account.id}
         onAccountChange={setAccountId}
         onCreateAccount={() => setCreatingAccount(true)}
+        onManageAccounts={() => setManagingAccounts(true)}
+        userEmail={userEmail}
         userInitial={userInitial}
       />
 
@@ -82,7 +87,12 @@ export function PnlDashboard({ accounts, today, userInitial }: Props) {
       )}
       {creatingAccount && (
         <Modal title="New account" onClose={() => setCreatingAccount(false)}>
-          <CreateAccountForm onCreated={onAccountCreated} onCancel={() => setCreatingAccount(false)} />
+          <CreateAccountForm onSaved={onAccountCreated} onCancel={() => setCreatingAccount(false)} />
+        </Modal>
+      )}
+      {managingAccounts && (
+        <Modal title="Manage accounts" onClose={() => setManagingAccounts(false)}>
+          <ManageAccounts accounts={accounts} onDone={() => setManagingAccounts(false)} />
         </Modal>
       )}
     </div>

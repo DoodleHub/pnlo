@@ -22,18 +22,20 @@ app/
   layout.tsx                 Root layout, Figtree font, dark theme
   globals.css                Design tokens (see Design system)
   page.tsx                   Dashboard (server): loads claims + accounts, renders PnlDashboard or the first-account form
-  actions.ts                 Server actions: createAccount, saveDailyPnl (upsert, or delete when pnl is null)
+  actions.ts                 Server actions: createAccount, updateAccount, deleteAccount, saveDailyPnl (upsert, or delete when pnl is null)
   login/                     Email/password sign-in + sign-up page, form (client), authenticate action
   auth/confirm/route.ts      Sign-up confirmation email landing: exchanges `code` (PKCE) or verifies `token_hash`, then redirects
   auth/actions.ts            signOut action
 components/
   pnl-dashboard.tsx          Client root of the dashboard: selected account, visible month, unit, open dialogs
-  app-header.tsx             Logo, AccountSelect, avatar (avatar button = sign out)
+  app-header.tsx             Logo, AccountSelect, ProfileMenu
+  profile-menu.tsx           Avatar button → menu: Manage accounts, Sign out
+  manage-accounts.tsx        Dialog body: list accounts, edit inline (CreateAccountForm), delete with confirm
   account-select.tsx         Custom listbox dropdown of accounts + "New account" entry
   stat-strip.tsx             Monthly P&L, best/worst day, green days
   calendar-panel.tsx         Month grid (Mon-first) + week totals, month nav, USD/% toggle, legend; in-month days are buttons
   day-editor.tsx             Dialog to set/clear one day's P&L (calls saveDailyPnl)
-  create-account-form.tsx    Account form (useActionState → createAccount); also exports shared input/button class strings
+  create-account-form.tsx    Account form (useActionState → createAccount, or updateAccount when `account` is passed); also exports shared input/button class strings
   modal.tsx                  Native <dialog> wrapper (showModal, Escape, backdrop click)
   icons.tsx                  Inline SVG icons (24px stroke set) and LogoMark
 lib/
