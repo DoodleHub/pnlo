@@ -74,14 +74,6 @@ export function buildMonth(year: number, month: number, account: Pick<Account, "
   return weeks;
 }
 
-/** Sum of the week's in-month days against the balance at the week's first in-month day, or null when nothing traded. */
-export function weekTotal(week: CalendarDay[]): Figure | null {
-  const days = week.filter((d) => d.inMonth);
-  const traded = days.filter((d) => d.pnl !== null);
-  if (!traded.length) return null;
-  return { pnl: traded.reduce((sum, d) => sum + (d.pnl ?? 0), 0), base: days[0].base };
-}
-
 /** Value shown for a figure in the given unit, used to rank days. */
 function measure(f: Figure, unit: Unit): number {
   return unit === "usd" ? f.pnl : f.pnl / f.base;

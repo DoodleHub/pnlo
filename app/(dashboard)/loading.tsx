@@ -63,22 +63,18 @@ export default function Loading() {
             </div>
           </div>
 
-          <div className="grid grid-cols-[repeat(5,minmax(0,1fr))_minmax(0,1.05fr)] gap-px overflow-hidden rounded-sm border border-line bg-line">
-            {[...WEEKDAYS, "Week"].map((d) => (
+          <div className="grid grid-cols-5 gap-px overflow-hidden rounded-sm border border-line bg-line">
+            {WEEKDAYS.map((d) => (
               <div key={d} className="bg-surface pt-2 pb-2.5 text-center text-label font-medium text-fg-secondary">
                 {d}
               </div>
             ))}
             {Array.from({ length: 5 }, (_, w) =>
-              Array.from({ length: 6 }, (_, d) =>
-                d < 5 ? (
-                  <div key={`${w}-${d}`} className="min-h-[64px] bg-cell px-1.5 pt-1.5 sm:min-h-[84px] sm:px-3">
-                    <Bone className="mt-0.5 h-4 w-4 rounded-sm" />
-                  </div>
-                ) : (
-                  <div key={`${w}-${d}`} className="bg-sunken" />
-                ),
-              ),
+              Array.from({ length: 5 }, (_, d) => (
+                <div key={`${w}-${d}`} className="min-h-[64px] bg-cell px-1.5 pt-1.5 sm:min-h-[84px] sm:px-3">
+                  <Bone className="mt-0.5 h-4 w-4 rounded-sm" />
+                </div>
+              )),
             )}
           </div>
         </div>

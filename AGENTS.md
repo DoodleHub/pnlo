@@ -10,7 +10,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # Pnlok
 
-A daily profit & loss calendar for traders. Users sign in with email and password, create trading accounts, and log each day's net P&L (after fees). The dashboard shows one account's month as a calendar with weekly totals and a summary strip, in USD or as a percent of the account's starting balance.
+A daily profit & loss calendar for traders. Users sign in with email and password, create trading accounts, and log each day's net P&L (after fees). The dashboard shows one account's month as a calendar and a summary strip, in USD or as a percent of the account's starting balance.
 
 Stack: Next.js 16 (App Router, Turbopack, `proxy.ts` instead of middleware), React 19, Tailwind CSS v4, Supabase (Postgres + Auth) via `@supabase/ssr`. TypeScript strict. No test suite yet; verify with `npm run build` and `npm run lint`.
 
@@ -35,7 +35,7 @@ components/
   manage-accounts.tsx        Dialog body: list accounts, edit inline (CreateAccountForm), delete with confirm
   account-select.tsx         Custom listbox dropdown of accounts + "New account" entry
   stat-strip.tsx             Monthly P&L, best/worst day, green days
-  calendar-panel.tsx         Month grid (Mon-first) + week totals, month nav, USD/% toggle, legend; in-month days are buttons
+  calendar-panel.tsx         Month grid (Mon-first), month nav, USD/% toggle, legend; in-month days are buttons
   day-editor.tsx             Dialog to set/clear one day's P&L (calls saveDailyPnl)
   create-account-form.tsx    Account form (useActionState → createAccount, or updateAccount when `account` is passed); also exports shared input/button class strings
   modal.tsx                  Native <dialog> wrapper (showModal, Escape, backdrop click)
@@ -43,7 +43,7 @@ components/
   service-worker.tsx         Registers public/sw.js (production only)
   submit-button.tsx          Form submit button with a spinner while pending (useFormStatus)
 lib/
-  pnl.ts                     Pure domain logic: types, buildMonth, weekTotal, monthStats, formatPnl, tone
+  pnl.ts                     Pure domain logic: types, buildMonth, monthStats, formatPnl, tone
   market.ts                  US market calendar: marketClosure(date) → "Weekend" | holiday name | null
   accounts.ts                getAccounts(): reads accounts + daily_pnl for the current user, maps to `Account`
   supabase/server.ts         createClient() for server components, actions and route handlers
@@ -70,7 +70,7 @@ ss-mocks/calendar-design.png Reference design for the dashboard
 - `Account.daily` is `Record<"YYYY-MM-DD", number>`. Build keys with `toKey()` (local time). Never use `toISOString()` for date keys; it shifts days across timezones.
 - A day with no row means "no activity" (`pnl: null`, rendered as —), which is different from a 0 P&L day.
 - Calendar weeks start Monday and show Mon–Fri only (weekends are hidden; `buildMonth` still returns 7-day weeks). Only in-month days count toward totals and are editable.
-- Percent mode measures against the balance going into the period: a day uses its opening balance (`CalendarDay.base` = starting balance + all earlier P&L), a week total uses the balance at its first in-month day, monthly P&L the balance at the 1st, and the header's all-time change the starting balance. Best/worst day are ranked in the displayed unit, so they can differ between USD and %. A non-positive base formats as —. `formatPnl` produces `+$4,373.00`, `-$340.00`, `+1.84%`, `$0.00`.
+- Percent mode measures against the balance going into the period: a day uses its opening balance (`CalendarDay.base` = starting balance + all earlier P&L), monthly P&L the balance at the 1st, and the header's all-time change the starting balance. Best/worst day are ranked in the displayed unit, so they can differ between USD and %. A non-positive base formats as —. `formatPnl` produces `+$4,373.00`, `-$340.00`, `+1.84%`, `$0.00`.
 - US market closures (weekends, NYSE holidays computed in `lib/market.ts`, plus a hand-kept list of unscheduled closures) set `CalendarDay.closed`. Closed days aren't editable unless they already hold an entry (so it can be cleared), and `saveDailyPnl` rejects new P&L on them.
 - `monthStats.tradingDays` counts open market days in the month; `greenDays` counts days with pnl > 0.
 - P&L is stored as `numeric(14,2)`; amounts are rounded to cents before saving.
@@ -101,7 +101,7 @@ Read `.agents/skills/supabase/SKILL.md` before Supabase work.
 Single dark theme. All colors, radii and type sizes are tokens in `app/globals.css` (`:root` CSS variables mapped into Tailwind via `@theme inline`), mirroring the Pnlok design system's tokens.json. Use the token utilities, never raw hex values or Tailwind's default palette.
 
 Colors (utility → role):
-- Surfaces: `bg-canvas` (page), `bg-surface` (panels, inputs on panels), `bg-sunken` (week-total column, toggle track, inputs in dialogs), `bg-cell` (empty day), `bg-raised` (hover, selected toggle).
+- Surfaces: `bg-canvas` (page), `bg-surface` (panels, inputs on panels), `bg-sunken` (closed days, toggle track, inputs in dialogs), `bg-cell` (empty day), `bg-raised` (hover, selected toggle).
 - Borders: `border-line` (subtle dividers, controls), `border-line-strong` (panel and popover outlines).
 - Text: `text-fg`, `text-fg-secondary` (labels, body copy), `text-fg-muted` (captions), `text-fg-faint` (placeholders, "—").
 - P&L: `text-profit`/`bg-profit-cell`/`bg-profit-dot`, `text-loss`/`bg-loss-cell`/`bg-loss-dot`, `bg-neutral-dot`. Pick via `tone(value)` → `"profit" | "loss" | "flat"`, never by hand-coded sign checks.

@@ -1,4 +1,4 @@
-import { formatPnl, formatPnlCompact, tone, weekTotal, type CalendarDay, type Figure, type Unit } from "@/lib/pnl";
+import { formatPnl, formatPnlCompact, tone, type CalendarDay, type Unit } from "@/lib/pnl";
 import { ChevronLeft, ChevronRight } from "./icons";
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri"];
@@ -57,7 +57,7 @@ export function CalendarPanel({
       <div
         role="grid"
         aria-label="Daily profit and loss"
-        className="grid grid-cols-[repeat(5,minmax(0,1fr))_minmax(0,1.05fr)] gap-px overflow-hidden rounded-sm border border-line bg-line"
+        className="grid grid-cols-5 gap-px overflow-hidden rounded-sm border border-line bg-line"
       >
         <div role="row" className="contents">
           {WEEKDAYS.map((d) => (
@@ -69,10 +69,6 @@ export function CalendarPanel({
               {d}
             </div>
           ))}
-          <div role="columnheader" className="bg-surface pt-2 pb-2.5 text-center text-label font-medium text-fg-secondary">
-            <span className="sm:hidden">Week</span>
-            <span className="hidden sm:inline">Week total</span>
-          </div>
         </div>
         {/* Weekends are hidden; skip weeks whose weekdays all fall outside the month. */}
         {weeks.filter((week) => week.slice(0, 5).some((d) => d.inMonth)).map((week) => (
@@ -86,7 +82,6 @@ export function CalendarPanel({
                 onSelect={onSelectDay}
               />
             ))}
-            <WeekTotal total={weekTotal(week)} unit={unit} />
           </div>
         ))}
       </div>
@@ -166,23 +161,6 @@ function DayContent({ day, unit }: { day: CalendarDay; unit: Unit }) {
         <PnlFigure value={day.pnl} unit={unit} base={day.base} className={`place-self-center ${figure[t]}`} />
       )}
     </>
-  );
-}
-
-function WeekTotal({ total, unit }: { total: Figure | null; unit: Unit }) {
-  const t = tone(total?.pnl ?? null);
-  return (
-    // Mirrors the day cell's rows so the figure lines up with the daily figures.
-    <div role="gridcell" className={`grid grid-rows-[auto_1fr] ${cellFill[t]} px-1.5 pt-1.5 pb-2.5 sm:px-3`}>
-      <span aria-hidden className="invisible text-label">0</span>
-      {total === null ? (
-        <span aria-label="No activity" className="place-self-center text-figure-md text-fg-faint">
-          —
-        </span>
-      ) : (
-        <PnlFigure value={total.pnl} unit={unit} base={total.base} className={`place-self-center ${figure[t]}`} />
-      )}
-    </div>
   );
 }
 
