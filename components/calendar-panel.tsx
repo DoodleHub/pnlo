@@ -173,7 +173,7 @@ function WeekTotal({ total, unit }: { total: Figure | null; unit: Unit }) {
   const t = tone(total?.pnl ?? null);
   return (
     // Mirrors the day cell's rows so the figure lines up with the daily figures.
-    <div role="gridcell" className="grid grid-rows-[auto_1fr] bg-cell px-1.5 pt-1.5 pb-2.5 sm:px-3">
+    <div role="gridcell" className={`grid grid-rows-[auto_1fr] ${cellFill[t]} px-1.5 pt-1.5 pb-2.5 sm:px-3`}>
       <span aria-hidden className="invisible text-label">0</span>
       {total === null ? (
         <span aria-label="No activity" className="place-self-center text-figure-md text-fg-faint">
