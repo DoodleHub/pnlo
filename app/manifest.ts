@@ -7,7 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: "Pnlok",
     description: "Your performance, one day at a time.",
     id: "/",
-    start_url: "/",
+    // Static splash that paints instantly, then replaces itself with "/".
+    start_url: "/launch.html",
     scope: "/",
     display: "standalone",
     background_color: "#12161d",

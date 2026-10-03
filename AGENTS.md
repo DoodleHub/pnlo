@@ -50,8 +50,9 @@ lib/
   supabase/proxy.ts          updateSession() used by proxy.ts
   supabase/database.types.ts Generated DB types; regenerate after schema changes
 public/
-  sw.js                      Service worker: caches /_next/static + offline page; pages and actions always hit the network
+  sw.js                      Service worker: caches /_next/static + offline/launch pages; pages and actions always hit the network
   offline.html               Offline fallback for navigations (static, inline token values)
+  launch.html                PWA start_url: precached splash that paints instantly, then location.replace("/")
   icon-*.png                 Manifest icons (any + maskable)
 supabase/migrations/         SQL migrations, applied to the hosted project (no local Supabase stack)
 ss-mocks/calendar-design.png Reference design for the dashboard
