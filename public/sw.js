@@ -1,7 +1,7 @@
 // Pnlok service worker. Bump VERSION to drop old caches.
 // Only content-hashed build assets and the static offline/launch pages are cached; pages and
 // server actions always go to the network so P&L data is never served stale.
-const VERSION = "v2";
+const VERSION = "v3";
 const CACHE = `pnlok-${VERSION}`;
 const OFFLINE_URL = "/offline.html";
 const LAUNCH_URL = "/launch.html";
