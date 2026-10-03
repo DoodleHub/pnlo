@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { Spinner } from "@/components/icons";
+import { Eye, EyeOff, Spinner } from "@/components/icons";
 import { authenticate, type LoginMode, type LoginState } from "./actions";
 
 const inputClass =
@@ -9,6 +9,7 @@ const inputClass =
 
 export function LoginForm({ initialError }: { initialError?: string }) {
   const [mode, setMode] = useState<LoginMode>("signin");
+  const [showPassword, setShowPassword] = useState(false);
   const [state, action, pending] = useActionState<LoginState, FormData>(
     authenticate,
     initialError ? { status: "error", message: initialError } : { status: "idle" },
@@ -33,15 +34,27 @@ export function LoginForm({ initialError }: { initialError?: string }) {
       <label htmlFor="password" className="text-body text-fg-secondary">
         Password
       </label>
-      <input
-        id="password"
-        name="password"
-        type="password"
-        required
-        minLength={signup ? 8 : undefined}
-        autoComplete={signup ? "new-password" : "current-password"}
-        className={inputClass}
-      />
+      <div className="relative">
+        <input
+          id="password"
+          name="password"
+          type={showPassword ? "text" : "password"}
+          required
+          minLength={signup ? 8 : undefined}
+          autoComplete={signup ? "new-password" : "current-password"}
+          className={`${inputClass} w-full pr-12`}
+        />
+        <button
+          type="button"
+          onClick={() => setShowPassword((v) => !v)}
+          aria-label="Show password"
+          aria-pressed={showPassword}
+          aria-controls="password"
+          className="absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-md text-fg-muted transition-colors hover:text-fg"
+        >
+          {showPassword ? <EyeOff /> : <Eye />}
+        </button>
+      </div>
       <button
         type="submit"
         disabled={pending}
