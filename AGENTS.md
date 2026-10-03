@@ -17,10 +17,11 @@ Stack: Next.js 16 (App Router, Turbopack, `proxy.ts` instead of middleware), Rea
 ## Layout
 
 ```
-proxy.ts                     Session refresh + redirect signed-out users to /login (all routes except static assets)
+proxy.ts                     Session refresh + redirect signed-out users to /login (all routes except static assets and PWA files)
 app/
   layout.tsx                 Root layout, Figtree font, dark theme
   globals.css                Design tokens (see Design system)
+  manifest.ts                PWA manifest (/manifest.webmanifest); apple-icon.png sits beside it
   (dashboard)/page.tsx       Dashboard (server): loads claims + accounts, renders PnlDashboard or the first-account form
   (dashboard)/loading.tsx    Dashboard skeleton while the page loads (route group keeps it off /login)
   actions.ts                 Server actions: createAccount, updateAccount, deleteAccount, saveDailyPnl (upsert, or delete when pnl is null)
@@ -39,6 +40,7 @@ components/
   create-account-form.tsx    Account form (useActionState → createAccount, or updateAccount when `account` is passed); also exports shared input/button class strings
   modal.tsx                  Native <dialog> wrapper (showModal, Escape, backdrop click)
   icons.tsx                  Inline SVG icons (24px stroke set), Spinner and LogoMark
+  service-worker.tsx         Registers public/sw.js (production only)
   submit-button.tsx          Form submit button with a spinner while pending (useFormStatus)
 lib/
   pnl.ts                     Pure domain logic: types, buildMonth, weekTotal, monthStats, formatPnl, tone
@@ -47,6 +49,10 @@ lib/
   supabase/server.ts         createClient() for server components, actions and route handlers
   supabase/proxy.ts          updateSession() used by proxy.ts
   supabase/database.types.ts Generated DB types; regenerate after schema changes
+public/
+  sw.js                      Service worker: caches /_next/static + offline page; pages and actions always hit the network
+  offline.html               Offline fallback for navigations (static, inline token values)
+  icon-*.png                 Manifest icons (any + maskable)
 supabase/migrations/         SQL migrations, applied to the hosted project (no local Supabase stack)
 ss-mocks/calendar-design.png Reference design for the dashboard
 ```
@@ -120,3 +126,4 @@ Component conventions:
 - Next 16 specifics: `cookies()`/`headers()`/`searchParams` are async; page props use the global `PageProps<"/route">` / `LayoutProps` types; route types are generated at build, so run `npm run build` (not bare `tsc`) to typecheck new routes.
 - Imports use the `@/` alias. Components are named exports in kebab-case files.
 - Pin dependency versions (`--save-exact`) and commit the lockfile.
+- When you change `public/sw.js`, bump its `VERSION` constant so clients drop old caches. Never cache pages, RSC payloads or server action responses there; P&L data must always come from the network.
